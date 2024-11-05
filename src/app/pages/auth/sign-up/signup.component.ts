@@ -15,12 +15,14 @@ import { IUser } from '../../../interfaces';
 export class SigUpComponent {
   public signUpError!: String;
   public validSignup!: boolean;
+  public isSubmitting = false;
   @ViewChild('name') nameModel!: NgModel;
   @ViewChild('lastname') lastnameModel!: NgModel;
   @ViewChild('email') emailModel!: NgModel;
   @ViewChild('password') passwordModel!: NgModel;
+  @ViewChild('confirmPassword') confirmPasswordModel!: NgModel;
 
-  public user: IUser = {};
+  public user: IUser = {password: '', confirmPassword: ''}
 
   constructor(private router: Router, 
     private authService: AuthService
@@ -28,22 +30,31 @@ export class SigUpComponent {
 
   public handleSignup(event: Event) {
     event.preventDefault();
-    if (!this.nameModel.valid) {
-      this.nameModel.control.markAsTouched();
+    [this.nameModel, this.lastnameModel, this.emailModel, this.passwordModel, this.confirmPasswordModel].forEach(model => {
+      if (!model.valid) {
+        model.control.markAsTouched();
+      }
+    });
+
+    const passwordsMatch = this.user.password === this.user.confirmPassword;
+    if (!passwordsMatch) {
+      this.signUpError = "Passwords do not match";
+      return;
+    }else {
+      this.signUpError = "";
     }
-    if (!this.lastnameModel.valid) {
-      this.lastnameModel.control.markAsTouched();
-    }
-    if (!this.emailModel.valid) {
-      this.emailModel.control.markAsTouched();
-    }
-    if (!this.passwordModel.valid) {
-      this.passwordModel.control.markAsTouched();
-    }
-    if (this.emailModel.valid && this.passwordModel.valid) {
+
+    if (this.nameModel.valid && this.lastnameModel.valid && this.emailModel.valid && this.passwordModel.valid && passwordsMatch) {
+      this.isSubmitting = true;
       this.authService.signup(this.user).subscribe({
-        next: () => this.validSignup = true,
-        error: (err: any) => (this.signUpError = err.description),
+        next: () => {
+          this.validSignup = true;
+          this.isSubmitting = false;
+        },
+        error: (err: any) => {
+          this.signUpError = err.description;
+          this.isSubmitting = false;
+        },
       });
     }
   }
