@@ -1,0 +1,17 @@
+<div *ngIf="showWebcam">
+    <webcam [width]="videoWidth" [height]="videoHeight"
+            [trigger]="triggerObservable"
+            [videoOptions]="videoOptions"
+            (imageCapture)="handleImage($event)"
+            (initError)="handleInitError($event)"></webcam>
+    <button (click)="triggerSnapshot()">Take Picture</button> <!-- Take Picture button inside showWebcam div -->
+  </div>
+  <div *ngIf="webcamImage">
+    <h3>Webcam Image</h3>
+    <img [src]="webcamImage.imageAsDataUrl"/>
+  </div>
+  <div *ngIf="croppedImage">
+    <h3>Cropped Image</h3>
+    <img [src]="croppedImage"/>
+  </div>
+  
